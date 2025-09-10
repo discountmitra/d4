@@ -69,6 +69,8 @@ export default function CategoriesScreen() {
               router.push("/food");
             } else if (item.title === "Healthcare") {
               router.push("/healthcare");
+            } else if (item.title === "Home Services") {
+              router.push("/home-services");
             }
           };
 
