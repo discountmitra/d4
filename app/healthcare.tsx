@@ -1,0 +1,295 @@
+import { useMemo, useRef, useState } from "react";
+import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "expo-router";
+
+type CategoryKey = "All" | "Hospitals" | "Clinics" | "Pharmacy" | "Diagnostics" | "Dental" | "Eye" | "ENT";
+
+type Hospital = {
+  id: string;
+  name: string;
+  location: string;
+  bookingPay: number;
+  bookingCashback: number;
+  specialOffers: string[];
+  phone: string;
+  category: CategoryKey;
+};
+
+export default function HealthcareScreen() {
+  const navigation = useNavigation();
+  const listRef = useRef<FlatList<any>>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("All");
+  const [query, setQuery] = useState("");
+
+  const categories: CategoryKey[] = [
+    "All",
+    "Hospitals",
+    "Clinics",
+    "Diagnostics",
+    "Pharmacy",
+    "Dental",
+    "Eye",
+    "ENT",
+  ];
+
+  const data = useMemo<Hospital[]>(
+    () => [
+      {
+        id: "amrutha-children",
+        name: "Amrutha Children's Hospital",
+        location: "Near Vani Nursing Home, Sardar Nagar, Sircilla",
+        bookingPay: 400,
+        bookingCashback: 100,
+        specialOffers: ["Lab & IP Services – 15% Discount"],
+        phone: "9876543210",
+        category: "Hospitals",
+      },
+      {
+        id: "lulu-children",
+        name: "Lulu Children's Hospital",
+        location: "Ambedkar Chowrasta, beside Amma Hospital, Rajanna Sircilla",
+        bookingPay: 300,
+        bookingCashback: 100,
+        specialOffers: ["Lab & IP Services – 15% Discount", "Pharmacy – 10% Discount"],
+        phone: "8876543210",
+        category: "Hospitals",
+      },
+      {
+        id: "life-hospital",
+        name: "Life Hospital (Gynaecology / MD)",
+        location: "Opposite Municipal Office, Gandhinagar, Sircilla",
+        bookingPay: 300,
+        bookingCashback: 100,
+        specialOffers: ["Lab & IP Services – 10% Discount"],
+        phone: "9705021177",
+        category: "Hospitals",
+      },
+      {
+        id: "vasavi-general",
+        name: "Vasavi General Hospital (General MD)",
+        location: "Beside Amma Hospital, Sircilla",
+        bookingPay: 300,
+        bookingCashback: 100,
+        specialOffers: ["Lab & IP Services – 15% Discount", "Pharmacy – 10% Discount"],
+        phone: "7876543210",
+        category: "Hospitals",
+      },
+      {
+        id: "siddivinayaka-ent",
+        name: "Siddivinayaka ENT Hospital (ENT MD)",
+        location: "Beside Vinayaka Ortho Care, Sircilla",
+        bookingPay: 300,
+        bookingCashback: 100,
+        specialOffers: ["Lab & IP Services – 10% Discount", "Pharmacy – 10% Discount"],
+        phone: "6876543210",
+        category: "ENT",
+      },
+      {
+        id: "shiva-sai-opticals",
+        name: "Shiva Sai Opticals",
+        location: "Beside Quality Fast Food, Sircilla",
+        bookingPay: 100,
+        bookingCashback: 50,
+        specialOffers: ["Spectacles starting from just ₹699"],
+        phone: "5876543210",
+        category: "Eye",
+      },
+      {
+        id: "aditya-neuro",
+        name: "Aditya Neuro & Ortho",
+        location: "Siddulawada, Sircilla",
+        bookingPay: 300,
+        bookingCashback: 0,
+        specialOffers: [
+          "Lab Tests – 10% Discount (Excluding outsourced tests)",
+          "IP Billing – 10% Discount (Excluding Consumables, Pharmacy & Surgical items)",
+          "Pharmacy – 10% Discount",
+        ],
+        phone: "8247556370",
+        category: "Clinics",
+      },
+      {
+        id: "chandana-chest",
+        name: "Chandana Chest Hospital",
+        location: "Beside Vani Nursing Home, Sircilla",
+        bookingPay: 300,
+        bookingCashback: 100,
+        specialOffers: [
+          "IP Billing – 10% Discount (Excluding Consumables, Pharmacy & Surgical items)",
+          "Lab Tests – 10% Discount (Excluding outsourced tests)",
+        ],
+        phone: "7799663223",
+        category: "Hospitals",
+      },
+      {
+        id: "vihana-dental",
+        name: "Vihana Multispeciality Dental Care",
+        location: "Karimnagar – Sircilla Road, Old Bus Stand, Sircilla",
+        bookingPay: 99,
+        bookingCashback: 50,
+        specialOffers: [
+          "X-ray – FREE (worth ₹300)",
+          "Dental Care – 20% Discount",
+          "Laser Flap Surgery – Up to 25% Discount",
+        ],
+        phone: "4876543210",
+        category: "Dental",
+      },
+    ],
+    []
+  );
+
+  const filtered = useMemo(() => {
+    const byCategory = selectedCategory === "All" ? data : data.filter(h => h.category === selectedCategory);
+    if (!query.trim()) return byCategory;
+    const q = query.toLowerCase();
+    return byCategory.filter(h => h.name.toLowerCase().includes(q) || h.location.toLowerCase().includes(q));
+  }, [data, selectedCategory, query]);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerGradient}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={0.8} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={22} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Healthcare</Text>
+        </View>
+        <View style={styles.searchRow}>
+          <View style={styles.searchBar}>
+            <Ionicons name="search" size={18} color="#6b7280" style={{ marginRight: 8 }} />
+            <TextInput
+              placeholder="Search hospitals, clinics..."
+              placeholderTextColor="#6b7280"
+              style={styles.searchInput}
+              value={query}
+              onChangeText={setQuery}
+            />
+          </View>
+          <TouchableOpacity activeOpacity={0.8} style={styles.filterButton}>
+            <Ionicons name="options-outline" size={18} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Category chips outside of the red header */}
+      <View style={styles.categoryChipsContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryChipsOuter}>
+          {categories.map(cat => (
+            <TouchableOpacity key={cat} onPress={() => setSelectedCategory(cat)} activeOpacity={0.9}>
+              <View style={[styles.catChip, selectedCategory === cat && styles.catChipActive]}>
+                <Text style={[styles.catChipText, selectedCategory === cat && styles.catChipTextActive]}>{cat}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      <FlatList
+        ref={listRef}
+        data={filtered}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.list}
+        onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          const y = e.nativeEvent.contentOffset.y;
+          if (!showScrollTop && y > 300) setShowScrollTop(true);
+          if (showScrollTop && y <= 300) setShowScrollTop(false);
+        }}
+        scrollEventThrottle={16}
+        renderItem={({ item }) => (
+          <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+            <View style={{ position: "relative" }}>
+              <Image source={require("../assets/default.png")} style={styles.image} resizeMode="cover" />
+              <View style={styles.saveRibbon}><Text style={styles.saveText}>Book OP</Text></View>
+            </View>
+            <View style={styles.cardBody}>
+              <View style={styles.titleRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.title}>{item.name}</Text>
+                  <View style={styles.locationRow}>
+                    <Ionicons name="location" size={14} color="#6b7280" />
+                    <Text style={styles.locationText}>{item.location}</Text>
+                  </View>
+                  {item.specialOffers.length > 0 && (
+                    <View style={{ marginTop: 8 }}>
+                      {item.specialOffers.map((offer: string, i: number) => (
+                        <Text key={i} style={styles.offerInline}>• {offer}</Text>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.actionsRow}>
+                <TouchableOpacity activeOpacity={0.9} onPress={() => {}} style={[styles.actionBtn, styles.callBtn]}>
+                  <Ionicons name="call" size={16} color="#111827" />
+                  <Text style={[styles.actionText, { color: "#111827" }]}>Call Now</Text>
+                </TouchableOpacity>
+                <TouchableOpacity activeOpacity={0.9} onPress={() => {}} style={[styles.actionBtn, styles.bookBtn]}>
+                  <Ionicons name="calendar" size={16} color="#fff" />
+                  <Text style={[styles.actionText, { color: "#fff" }]}>Book Now (₹{item.bookingPay})</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
+        ListFooterComponent={() => (<View style={{ height: 88 }} />)}
+      />
+
+      {showScrollTop && (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })}
+          style={styles.scrollTopFab}
+        >
+          <Ionicons name="arrow-up" size={20} color="#ffffff" />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f1f5f9" },
+  headerGradient: { backgroundColor: "#ef4444", paddingHorizontal: 24, paddingTop: 56, paddingBottom: 16 },
+  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
+  backButton: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.2)", marginRight: 12 },
+  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  searchRow: { flexDirection: "row", alignItems: "center" },
+  searchBar: { flex: 1, flexDirection: "row", alignItems: "center", backgroundColor: "#ffffff", borderRadius: 999, paddingHorizontal: 16, height: 48 },
+  searchInput: { flex: 1, fontSize: 16, color: "#111827" },
+  filterButton: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)", marginLeft: 12 },
+  categoryChips: { paddingTop: 12, paddingBottom: 4 },
+  categoryChipsContainer: { backgroundColor: "#ffffff", borderBottomWidth: 1, borderBottomColor: "#e5e7eb" },
+  categoryChipsOuter: { paddingHorizontal: 16, paddingVertical: 12 },
+  catChip: { borderWidth: 1, borderColor: "#e5e7eb", backgroundColor: "#ffffff", paddingHorizontal: 14, height: 40, borderRadius: 20, marginRight: 12, alignItems: "center", justifyContent: "center" },
+  catChipActive: { backgroundColor: "#111827", borderColor: "#111827" },
+  catChipText: { fontWeight: "700", color: "#111827", fontSize: 12 },
+  catChipTextActive: { color: "#ffffff" },
+  list: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 36 },
+  card: { backgroundColor: "#fff", borderRadius: 16, overflow: "hidden", marginBottom: 16, borderWidth: 1, borderColor: "#e5e7eb", shadowColor: "#000", shadowOpacity: 0.08, shadowOffset: { width: 0, height: 6 }, shadowRadius: 12, elevation: 3 },
+  image: { width: "100%", height: 160 },
+  saveRibbon: { position: "absolute", right: 0, top: 0, backgroundColor: "#10b981", paddingHorizontal: 14, paddingVertical: 8, borderBottomLeftRadius: 14 },
+  saveText: { color: "#fff", fontSize: 12, fontWeight: "700" },
+  cardBody: { padding: 16 },
+  titleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: "700", color: "#111827" },
+  subtitle: { fontSize: 13, color: "#4b5563", marginTop: 4 },
+  locationRow: { flexDirection: "row", alignItems: "center", marginTop: 6 },
+  locationText: { marginLeft: 6, fontSize: 12, color: "#6b7280" },
+  metaBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#ecfdf5", borderWidth: 1, borderColor: "#bbf7d0", padding: 10, borderRadius: 12, marginTop: 8 },
+  metaText: { marginLeft: 8, color: "#065f46" },
+  offersBox: { display: "none" },
+  offerItem: { fontSize: 12, color: "#374151", marginBottom: 4 },
+  offerInline: { fontSize: 12, color: "#374151", marginBottom: 4 },
+  actionsRow: { flexDirection: "row", alignItems: "center", marginTop: 12 },
+  actionBtn: { flex: 1, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row" },
+  callBtn: { borderWidth: 1, borderColor: "#e5e7eb", backgroundColor: "#fff" },
+  bookBtn: { marginLeft: 8, backgroundColor: "#111827" },
+  actionText: { fontWeight: "700", marginLeft: 6 },
+  scrollTopFab: { position: "absolute", right: 16, bottom: 72, width: 44, height: 44, borderRadius: 22, backgroundColor: "#111827", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowOffset: { width: 0, height: 6 }, shadowRadius: 12, elevation: 4 },
+});
+
+

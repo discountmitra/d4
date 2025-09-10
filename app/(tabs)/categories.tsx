@@ -67,6 +67,8 @@ export default function CategoriesScreen() {
           const handlePress = () => {
             if (item.title === "Food") {
               router.push("/food");
+            } else if (item.title === "Healthcare") {
+              router.push("/healthcare");
             }
           };
 
