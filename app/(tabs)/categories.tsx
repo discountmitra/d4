@@ -71,6 +71,14 @@ export default function CategoriesScreen() {
               router.push("/healthcare");
             } else if (item.title === "Home Services") {
               router.push("/home-services");
+            } else if (item.title === "Automobiles") {
+              router.push("/automobiles");
+            } else if (item.title === "Events") {
+              router.push("/events");
+            } else if (item.title === "Financial Services") {
+              router.push("/financial-services");
+            } else if (item.title === "Education") {
+              router.push("/education");
             }
           };
 
