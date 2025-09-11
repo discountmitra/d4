@@ -21,13 +21,28 @@ export default function CategoriesPreview() {
 
       <FlatList
         data={categories.slice(0, 4)} // show only 4 on home
-        renderItem={({ item }) => (
-          <CategoryCard
-            icon={item.icon as any}
-            title={item.title}
-            color={item.color}
-          />
-        )}
+        renderItem={({ item }) => {
+          const handlePress = () => {
+            if (item.title === "Food") {
+              router.push("/food");
+            } else if (item.title === "Healthcare") {
+              router.push("/healthcare");
+            } else if (item.title === "Home Services") {
+              router.push("/home-services");
+            } else {
+              router.push("/coming-soon");
+            }
+          };
+
+          return (
+            <CategoryCard
+              icon={item.icon as any}
+              title={item.title}
+              color={item.color}
+              onPress={handlePress}
+            />
+          );
+        }}
         keyExtractor={(item) => item.id}
         numColumns={2}
         scrollEnabled={false}

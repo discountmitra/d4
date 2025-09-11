@@ -19,6 +19,7 @@ const categories = [
   { id: "10", title: "Education", subtitle: "Schools & Coaching", icon: "school", color: "#E67E22" },
   { id: "11", title: "Electronics", subtitle: "Tech & Gadgets", icon: "phone-portrait", color: "#2C3E50" },
   { id: "12", title: "Clothing", subtitle: "Fashion & Style", icon: "shirt", color: "#C0392B" },
+  { id: "13", title: "Construction", subtitle: "Building & Materials", icon: "construct", color: "#EAB308" }
 ];
 
 
@@ -73,28 +74,39 @@ export default function CategoriesScreen() {
               router.push("/home-services");
             } else if (item.title === "Automobiles") {
               router.push("/automobiles");
+            } else if (item.title === "Travel") {
+              router.push("/coming-soon");
             } else if (item.title === "Events") {
               router.push("/events");
             } else if (item.title === "Financial Services") {
               router.push("/financial-services");
             } else if (item.title === "Education") {
               router.push("/education");
+            } else if (item.title === "Beauty & Salon") {
+              router.push("/beauty-salon");
+            } else if (item.title === "Construction") {
+              router.push("/construction");
+            } else if (item.title === "Bar" || item.title === "Electronics" || item.title === "Clothing") {
+              router.push("/coming-soon");
             }
           };
 
           return (
-            <CategoryCard
-              icon={item.icon as any}
-              title={item.title}
-              color={item.color}
-              onPress={handlePress}
-            />
+            <View style={{ width: "50%" }}>
+              <CategoryCard
+                icon={item.icon as any}
+                title={item.title}
+                color={item.color}
+                onPress={handlePress}
+              />
+            </View>
           );
         }}
         keyExtractor={(item) => item.id}
         numColumns={2}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}
+        columnWrapperStyle={{ justifyContent: "space-between" }}
       />
     </View>
   );

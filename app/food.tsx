@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
+import NoDataIllustration from "../assets/no-data.svg";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
 
@@ -27,6 +28,7 @@ export default function FoodScreen() {
   const navigation = useNavigation();
   const listRef = useRef<FlatList<any>>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [query, setQuery] = useState("");
 
   const data = useMemo<Restaurant[]>(
     () => [
@@ -91,6 +93,25 @@ export default function FoodScreen() {
     []
   );
 
+  const matchesOrdered = (q: string, ...fields: string[]) => {
+    const queryStr = q.trim().toLowerCase();
+    if (!queryStr) return true;
+    const hay = fields.join(" ").toLowerCase();
+    const tokens = queryStr.split(/\s+/);
+    let pos = 0;
+    for (const token of tokens) {
+      const idx = hay.indexOf(token, pos);
+      if (idx === -1) return false;
+      pos = idx + token.length;
+    }
+    return true;
+  };
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return data;
+    return data.filter(r => matchesOrdered(query, r.name, r.cuisine, r.specialty));
+  }, [data, query]);
+
   return (
     <View style={styles.container}>
       <View style={styles.headerGradient}>
@@ -111,6 +132,8 @@ export default function FoodScreen() {
               placeholder="Search restaurants, cuisines..."
               placeholderTextColor="#6b7280"
               style={styles.searchInput}
+              value={query}
+              onChangeText={setQuery}
             />
           </View>
           <TouchableOpacity activeOpacity={0.8} style={styles.filterButton}>
@@ -121,9 +144,18 @@ export default function FoodScreen() {
 
       <FlatList
         ref={listRef}
-        data={data}
+        data={filtered}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIllustrationWrapper}>
+              <NoDataIllustration width="100%" height="100%" />
+            </View>
+            <Text style={styles.emptyTitle}>No items found</Text>
+            <Text style={styles.emptySubtitle}>Try a different search query.</Text>
+          </View>
+        )}
         onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
           const y = e.nativeEvent.contentOffset.y;
           if (!showScrollTop && y > 300) setShowScrollTop(true);
@@ -279,6 +311,29 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     paddingBottom: 32,
+  },
+  emptyContainer: {
+    padding: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyIllustrationWrapper: {
+    width: "100%",
+    aspectRatio: 1.2,
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0f172a",
+    textAlign: "center",
+    marginTop: 4,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: "#475569",
+    textAlign: "center",
+    marginTop: 6,
   },
   card: {
     backgroundColor: "#fff",
