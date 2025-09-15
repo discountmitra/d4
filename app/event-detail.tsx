@@ -5,9 +5,9 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   TextInput,
   Image,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -39,6 +39,24 @@ export default function EventDetailScreen() {
   const [specialRequirements, setSpecialRequirements] = useState('');
   const [venue, setVenue] = useState('');
   const [errors, setErrors] = useState<{ name?: string; phone?: string; date?: string; time?: string }>({});
+  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const faqData = [
+    {
+      question: "How far in advance should I book my event?",
+      answer: "We recommend booking 2-4 weeks in advance for regular events and 6-8 weeks for wedding seasons or peak times to ensure availability."
+    },
+    {
+      question: "What happens if I need to postpone my event?",
+      answer: "Events can be rescheduled up to 7 days before the event date without extra charges. Cancellations after this period may incur fees."
+    },
+    {
+      question: "What is included in the event package?",
+      answer: "Our standard packages include venue decoration, basic lighting, sound system, and coordination. Additional services like catering and photography are available."
+    }
+  ];
 
   const eventData: EventData[] = [
     {
@@ -108,18 +126,74 @@ export default function EventDetailScreen() {
     if (Object.keys(newErrors).length > 0) return;
 
     const bookingId = Math.random().toString(36).slice(2, 8).toUpperCase();
-    Alert.alert(
-      'Booking Confirmed',
-      `Event: ${currentEvent.Name}
-Name: ${customerName}
-Phone: ${phoneNumber}
-Date: ${eventDate}
-Time: ${eventTime}
-Booking ID: ${bookingId}
+    // Simple success feedback
+    setTimeout(() => {
+      router.back();
+    }, 1000);
+  };
 
-${currentEvent.reaction}`,
-      [{ text: 'OK', onPress: () => router.back() }]
-    );
+  const toggleFAQ = (index: number) => {
+    setExpandedFAQ(expandedFAQ === index ? null : index);
+  };
+
+  const openDatePicker = () => {
+    setShowDatePicker(true);
+  };
+
+  const selectDate = (date: Date) => {
+    setSelectedDate(date);
+  };
+
+  const confirmDateSelection = () => {
+    // Format date as DD-MM-YYYY to avoid timezone issues
+    const day = selectedDate.getDate().toString().padStart(2, '0');
+    const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = selectedDate.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+    setEventDate(formattedDate);
+    setErrors(prev => ({ ...prev, date: undefined }));
+    setShowDatePicker(false);
+  };
+
+  const cancelDateSelection = () => {
+    setShowDatePicker(false);
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate);
+    if (direction === 'prev') {
+      newDate.setMonth(newDate.getMonth() - 1);
+    } else {
+      newDate.setMonth(newDate.getMonth() + 1);
+    }
+    setSelectedDate(newDate);
+  };
+
+  const generateCalendarDays = () => {
+    const today = new Date();
+    const currentMonth = selectedDate.getMonth();
+    const currentYear = selectedDate.getFullYear();
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    const days = [];
+    
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentYear, currentMonth, day);
+      const isToday = date.toDateString() === today.toDateString();
+      const isSelected = date.toDateString() === selectedDate.toDateString();
+      const isPast = date < today && !isToday;
+      
+      days.push({ day, date, isToday, isSelected, isPast });
+    }
+    
+    return days;
   };
 
   const event = useMemo(() => ({
@@ -227,13 +301,17 @@ ${currentEvent.reaction}`,
 
           <View style={styles.formRow}>
             <Text style={styles.inputLabel}>Event Date</Text>
-            <TextInput 
-              value={eventDate} 
-              onChangeText={setEventDate} 
-              placeholder="DD/MM/YYYY" 
-              placeholderTextColor="#9ca3af" 
-              style={styles.input} 
-            />
+            <TouchableOpacity onPress={openDatePicker} style={styles.dateInputContainer}>
+              <TextInput 
+                value={eventDate} 
+                placeholder="Select date" 
+                placeholderTextColor="#9ca3af" 
+                style={styles.dateInput}
+                editable={false}
+                pointerEvents="none"
+              />
+              <Ionicons name="calendar-outline" size={20} color="#6b7280" style={styles.calendarIcon} />
+            </TouchableOpacity>
             {errors.date ? <Text style={styles.errorText}>{errors.date}</Text> : null}
           </View>
 
@@ -295,7 +373,108 @@ ${currentEvent.reaction}`,
           </TouchableOpacity>
         </View>
 
+        {/* FAQ Section */}
+        <View style={styles.faqCard}>
+          <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
+          <View style={styles.faqList}>
+            {faqData.map((faq, index) => (
+              <View key={index} style={styles.faqItem}>
+                <TouchableOpacity 
+                  style={styles.faqHeader}
+                  onPress={() => toggleFAQ(index)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.faqQuestion}>{faq.question}</Text>
+                  <Ionicons 
+                    name={expandedFAQ === index ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color="#6b7280" 
+                  />
+                </TouchableOpacity>
+                {expandedFAQ === index && (
+                  <View style={styles.faqAnswerContainer}>
+                    <Text style={styles.faqAnswer}>{faq.answer}</Text>
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ height: 24 }} />
+
       </ScrollView>
+
+      {/* Calendar Modal */}
+      <Modal
+        visible={showDatePicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowDatePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.calendarContainer}>
+            <View style={styles.calendarHeader}>
+              <TouchableOpacity onPress={() => navigateMonth('prev')} style={styles.navButton}>
+                <Ionicons name="chevron-back" size={20} color="#374151" />
+              </TouchableOpacity>
+              <Text style={styles.monthYear}>
+                {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </Text>
+              <TouchableOpacity onPress={() => navigateMonth('next')} style={styles.navButton}>
+                <Ionicons name="chevron-forward" size={20} color="#374151" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.weekDays}>
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <Text key={day} style={styles.weekDayText}>{day}</Text>
+              ))}
+            </View>
+            
+            <View style={styles.calendarGrid}>
+              {generateCalendarDays().map((dayData, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.calendarDay,
+                    dayData?.isToday && styles.todayDay,
+                    dayData?.isSelected && styles.selectedDay,
+                    dayData?.isPast && styles.pastDay,
+                    !dayData && styles.emptyDay
+                  ]}
+                  onPress={() => dayData && !dayData.isPast && selectDate(dayData.date)}
+                  disabled={!dayData || dayData.isPast}
+                >
+                  <Text style={[
+                    styles.calendarDayText,
+                    dayData?.isToday && styles.todayText,
+                    dayData?.isSelected && styles.selectedText,
+                    dayData?.isPast && styles.pastText
+                  ]}>
+                    {dayData?.day || ''}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            <View style={styles.calendarButtonContainer}>
+              <TouchableOpacity
+                style={styles.calendarCancelButton}
+                onPress={cancelDateSelection}
+              >
+                <Text style={styles.calendarCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.calendarConfirmButton}
+                onPress={confirmDateSelection}
+              >
+                <Text style={styles.calendarConfirmText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -338,4 +517,40 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 12, color: '#dc2626', marginTop: 4 },
   bookButton: { marginTop: 8, height: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#e91e63' },
   bookButtonText: { fontSize: 16, fontWeight: '700', color: '#ffffff' },
+  faqCard: { backgroundColor: '#ffffff', marginHorizontal: 20, marginBottom: 20, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#e5e7eb' },
+  faqList: { gap: 12 },
+  faqItem: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 12, marginBottom: 12 },
+  faqHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 },
+  faqQuestion: { fontSize: 16, fontWeight: '600', color: '#111827', flex: 1, marginRight: 12 },
+  faqAnswerContainer: { paddingTop: 12, paddingLeft: 4 },
+  faqAnswer: { fontSize: 14, color: '#6b7280', lineHeight: 20 },
+  dateInputContainer: { position: 'relative', flexDirection: 'row', alignItems: 'center' },
+  dateInput: { flex: 1, borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16, color: '#111827', backgroundColor: '#ffffff', paddingRight: 45 },
+  calendarIcon: { position: 'absolute', right: 12 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' },
+  calendarContainer: { backgroundColor: '#ffffff', borderRadius: 16, margin: 20, padding: 20, maxWidth: 350, width: '90%' },
+  calendarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  navButton: { padding: 8, borderRadius: 8, backgroundColor: '#f3f4f6' },
+  monthYear: { fontSize: 18, fontWeight: '600', color: '#111827' },
+  weekDays: { flexDirection: 'row', marginBottom: 10 },
+  weekDayText: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '600', color: '#6b7280', paddingVertical: 8 },
+  calendarGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  calendarDay: { width: '14.28%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 8, margin: 1 },
+  emptyDay: { backgroundColor: 'transparent' },
+  todayDay: { backgroundColor: '#dbeafe', borderWidth: 1, borderColor: '#3b82f6' },
+  selectedDay: { backgroundColor: '#e91e63' },
+  pastDay: { opacity: 0.3 },
+  calendarDayText: { fontSize: 14, fontWeight: '500', color: '#374151' },
+  todayText: { color: '#3b82f6', fontWeight: '600' },
+  selectedText: { color: '#ffffff', fontWeight: '600' },
+  pastText: { color: '#9ca3af' },
+  closeCalendarButton: { marginTop: 20, paddingVertical: 12, backgroundColor: '#f3f4f6', borderRadius: 8, alignItems: 'center' },
+  closeCalendarText: { fontSize: 16, fontWeight: '600', color: '#374151' },
+  
+  // Calendar Button Container
+  calendarButtonContainer: { flexDirection: 'row', gap: 10, marginTop: 20 },
+  calendarCancelButton: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  calendarCancelText: { fontSize: 15, fontWeight: '600', color: '#6b7280' },
+  calendarConfirmButton: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#e91e63', alignItems: 'center' },
+  calendarConfirmText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
 });
