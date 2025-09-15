@@ -8,6 +8,7 @@ import {
   TextInput,
   Image,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -41,6 +42,10 @@ export default function EventDetailScreen() {
   const [errors, setErrors] = useState<{ name?: string; phone?: string; date?: string; time?: string }>({});
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [bookingId, setBookingId] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const faqData = [
@@ -124,13 +129,18 @@ export default function EventDetailScreen() {
     if (!eventTime.trim()) newErrors.time = 'Event time is required';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
-
-    const bookingId = Math.random().toString(36).slice(2, 8).toUpperCase();
-    // Simple success feedback
-    setTimeout(() => {
-      router.back();
-    }, 1000);
+    setShowConfirmModal(true);
   };
+  const confirmBooking = () => {
+    setShowConfirmModal(false);
+    setIsLoading(true);
+    setTimeout(() => {
+      setBookingId(Math.random().toString(36).slice(2, 8).toUpperCase());
+      setIsLoading(false);
+      setShowSuccessModal(true);
+    }, 1500);
+  };
+  const closeSuccess = () => { setShowSuccessModal(false); router.back(); };
 
   const toggleFAQ = (index: number) => {
     setExpandedFAQ(expandedFAQ === index ? null : index);
@@ -405,6 +415,48 @@ export default function EventDetailScreen() {
 
       </ScrollView>
 
+      {/* Confirmation Modal */}
+      <Modal visible={showConfirmModal} transparent animationType="fade" onRequestClose={() => setShowConfirmModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModalCard}>
+            <View style={styles.modalIconContainer}><View style={styles.modalIconCircle}><Ionicons name="help-circle" size={32} color="#e91e63" /></View></View>
+            <Text style={styles.modalTitle}>Confirm Booking</Text>
+            <Text style={styles.modalSubtitle}>Please confirm your details before booking</Text>
+            <View style={styles.bookingDetailsCard}>
+              <View style={styles.detailRow}><Ionicons name="pricetag" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Event:</Text><Text style={styles.detailValue}>{event.name}</Text></View>
+              <View style={styles.detailRow}><Ionicons name="person" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Name:</Text><Text style={styles.detailValue}>{customerName}</Text></View>
+              <View style={styles.detailRow}><Ionicons name="call" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Phone:</Text><Text style={styles.detailValue}>{phoneNumber}</Text></View>
+              <View style={styles.detailRow}><Ionicons name="calendar" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Date:</Text><Text style={styles.detailValue}>{eventDate}</Text></View>
+              <View style={styles.detailRow}><Ionicons name="time" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Time:</Text><Text style={styles.detailValue}>{eventTime}</Text></View>
+            </View>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity style={styles.modalButtonSecondary} onPress={() => setShowConfirmModal(false)} activeOpacity={0.8}><Text style={styles.modalButtonSecondaryText}>Edit</Text></TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButtonPrimary, { backgroundColor: '#e91e63' }]} onPress={confirmBooking} activeOpacity={0.8}>
+                <Ionicons name="checkmark-circle" size={18} color="#ffffff" />
+                <Text style={styles.modalButtonPrimaryText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Loading Modal */}
+      <Modal visible={isLoading} transparent animationType="fade">
+        <View style={styles.modalOverlay}><View style={styles.loadingModalCard}><ActivityIndicator size="large" color="#e91e63" /><Text style={styles.loadingText}>Submitting your booking...</Text><Text style={styles.loadingSubtext}>Please wait a moment</Text></View></View>
+      </Modal>
+
+      {/* Success Modal */}
+      <Modal visible={showSuccessModal} transparent animationType="fade" onRequestClose={closeSuccess}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModalCard}>
+            <View style={styles.modalIconContainer}><View style={styles.successIconCircle}><Ionicons name="checkmark-circle" size={48} color="#10b981" /></View></View>
+            <Text style={styles.successModalTitle}>Booking Submitted</Text>
+            <View style={styles.successDetailsCard}><Text style={styles.bookingCodeLabel}>Booking ID</Text><Text style={styles.bookingCodeValue}>{bookingId}</Text><Text style={styles.bookingCodeNote}>We’ll contact you shortly to finalize details</Text></View>
+            <TouchableOpacity style={[styles.successButton, { backgroundColor: '#e91e63' }]} onPress={closeSuccess} activeOpacity={0.8}><Text style={styles.successButtonText}>Done</Text></TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Calendar Modal */}
       <Modal
         visible={showDatePicker}
@@ -553,4 +605,32 @@ const styles = StyleSheet.create({
   calendarCancelText: { fontSize: 15, fontWeight: '600', color: '#6b7280' },
   calendarConfirmButton: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#e91e63', alignItems: 'center' },
   calendarConfirmText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
+  // Modals (aligned to healthcare)
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  confirmModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  modalIconContainer: { alignItems: 'center', marginBottom: 16 },
+  modalIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fef2f2', alignItems: 'center', justifyContent: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 6 },
+  modalSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 20 },
+  bookingDetailsCard: { backgroundColor: '#f8fafc', borderRadius: 10, padding: 16, marginBottom: 20 },
+  detailRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  detailLabel: { fontSize: 13, color: '#6b7280', marginLeft: 6, marginRight: 8, minWidth: 65 },
+  detailValue: { fontSize: 13, fontWeight: '600', color: '#111827', flex: 1 },
+  modalButtonContainer: { flexDirection: 'row', gap: 10 },
+  modalButtonSecondary: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  modalButtonSecondaryText: { fontSize: 15, fontWeight: '600', color: '#6b7280' },
+  modalButtonPrimary: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#ef4444', alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  modalButtonPrimaryText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
+  loadingModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 28, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  loadingText: { fontSize: 16, fontWeight: '600', color: '#111827', marginTop: 12, textAlign: 'center' },
+  loadingSubtext: { fontSize: 13, color: '#6b7280', marginTop: 6, textAlign: 'center' },
+  successModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  successIconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#f0fdf4', alignItems: 'center', justifyContent: 'center' },
+  successModalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 6 },
+  successDetailsCard: { backgroundColor: '#f8fafc', borderRadius: 12, padding: 16, marginBottom: 20, alignItems: 'center' },
+  bookingCodeLabel: { fontSize: 13, color: '#6b7280', marginBottom: 6, fontWeight: '600' },
+  bookingCodeValue: { fontSize: 24, fontWeight: '700', color: '#e91e63', letterSpacing: 1, marginBottom: 6 },
+  bookingCodeNote: { fontSize: 11, color: '#9ca3af', textAlign: 'center' },
+  successButton: { paddingVertical: 14, borderRadius: 10, alignItems: 'center' },
+  successButtonText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
 });

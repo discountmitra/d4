@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Modal, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
@@ -21,6 +21,10 @@ export default function HomeServiceDetailScreen() {
   const [preferredTime, setPreferredTime] = useState("");
   const [issueNotes, setIssueNotes] = useState("");
   const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string; time?: string }>({});
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showProcessing, setShowProcessing] = useState(false);
+  const [showDone, setShowDone] = useState(false);
+  const [reqId, setReqId] = useState("");
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
 
     const faqData = [
@@ -50,19 +54,19 @@ export default function HomeServiceDetailScreen() {
     if (!preferredTime.trim()) newErrors.time = "Preferred time is required";
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
-
-    const requestId = Math.random().toString(36).slice(2, 8).toUpperCase();
-    Alert.alert(
-      "Request Submitted",
-      `Service: ${service.name}
-Name: ${userName}
-Phone: ${userPhone}
-Address: ${address}
-Preferred: ${preferredTime}
-Request ID: ${requestId}`,
-      [{ text: "OK", onPress: () => router.back() }]
-    );
+    setShowConfirm(true);
   };
+
+  const confirmRequest = () => {
+    setShowConfirm(false);
+    setShowProcessing(true);
+    setTimeout(() => {
+      setReqId(Math.random().toString(36).slice(2, 8).toUpperCase());
+      setShowProcessing(false);
+      setShowDone(true);
+    }, 1500);
+  };
+  const closeDone = () => { setShowDone(false); router.back(); };
 
   const toggleFAQ = (index: number) => {
     setExpandedFAQ(expandedFAQ === index ? null : index);
@@ -189,6 +193,70 @@ Request ID: ${requestId}`,
 
         <View style={{ height: 24 }} />
       </ScrollView>
+
+      {/* Two-step modals - match Healthcare styling, use Home Service data */}
+      <Modal visible={showConfirm} transparent animationType="fade" onRequestClose={() => setShowConfirm(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModalCard}>
+            <View style={styles.modalIconContainer}>
+              <View style={styles.modalIconCircle}>
+                <Ionicons name="help-circle" size={32} color="#ef4444" />
+              </View>
+            </View>
+            <Text style={styles.modalTitle}>Confirm Request</Text>
+            <Text style={styles.modalSubtitle}>Please confirm your details before submitting</Text>
+            <View style={styles.bookingDetailsCard}>
+              <View style={styles.detailRow}><Ionicons name="construct" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Service:</Text><Text style={styles.detailValue}>{service.name}</Text></View>
+              <View style={styles.detailRow}><Ionicons name="person" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Name:</Text><Text style={styles.detailValue}>{userName}</Text></View>
+              <View style={styles.detailRow}><Ionicons name="call" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Phone:</Text><Text style={styles.detailValue}>{userPhone}</Text></View>
+              <View style={styles.detailRow}><Ionicons name="home" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Address:</Text><Text style={styles.detailValue}>{address}</Text></View>
+              <View style={styles.detailRow}><Ionicons name="time" size={16} color="#6b7280" /><Text style={styles.detailLabel}>Preferred:</Text><Text style={styles.detailValue}>{preferredTime}</Text></View>
+            </View>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity style={styles.modalButtonSecondary} onPress={() => setShowConfirm(false)} activeOpacity={0.8}>
+                <Text style={styles.modalButtonSecondaryText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButtonPrimary} onPress={confirmRequest} activeOpacity={0.8}>
+                <Ionicons name="checkmark-circle" size={18} color="#ffffff" />
+                <Text style={styles.modalButtonPrimaryText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showProcessing} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.loadingModalCard}>
+            <ActivityIndicator size="large" color="#ef4444" />
+            <Text style={styles.loadingText}>Submitting your request...</Text>
+            <Text style={styles.loadingSubtext}>Please wait a moment</Text>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showDone} transparent animationType="fade" onRequestClose={closeDone}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModalCard}>
+            <View style={styles.modalIconContainer}>
+              <View style={styles.successIconCircle}>
+                <Ionicons name="checkmark-circle" size={48} color="#10b981" />
+              </View>
+            </View>
+            <Text style={styles.successModalTitle}>Request Submitted!</Text>
+            <View style={styles.successDetailsCard}>
+              <View style={styles.bookingCodeContainer}>
+                <Text style={styles.bookingCodeLabel}>Request ID</Text>
+                <Text style={styles.bookingCodeValue}>{reqId}</Text>
+                <Text style={styles.bookingCodeNote}>Keep this code for reference</Text>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.successButton} onPress={closeDone} activeOpacity={0.8}>
+              <Text style={styles.successButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -338,6 +406,7 @@ const styles = StyleSheet.create({
   benefitItem: { flexDirection: "row", alignItems: "center", width: "48%", marginBottom: 8 },
   benefitText: { marginLeft: 6, color: "#374151", fontSize: 12, fontWeight: "600" },
 
+  // Request form styles
   requestCard: { backgroundColor: "#fff", marginHorizontal: 16, marginTop: 8, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#e5e7eb" },
   requestHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   badge: { backgroundColor: "#f3f4f6", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#e5e7eb" },
@@ -350,6 +419,17 @@ const styles = StyleSheet.create({
   noteText: { marginTop: 10, fontSize: 12, color: "#6b7280" },
   errorText: { color: "#ef4444", fontSize: 12, marginTop: 6, fontWeight: "700" },
 
+  // (previous request styles were commented out; consolidated above)
+  // modalOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 16 },
+  // modalCard: { backgroundColor: '#fff', borderRadius: 14, padding: 16, width: '100%', maxWidth: 360 },
+  // modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 8, textAlign: 'center' },
+  // modalBody: { fontSize: 13, color: '#374151', lineHeight: 18, textAlign: 'center' },
+  // modalActions: { flexDirection: 'row', gap: 10, marginTop: 12 },
+  // modalSecondary: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  // modalSecondaryText: { fontSize: 14, fontWeight: '600', color: '#6b7280' },
+  // modalPrimary: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: '#3b82f6', alignItems: 'center' },
+  // modalPrimaryText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+
    faqCard: { backgroundColor: '#ffffff', marginHorizontal: 20, marginBottom: 20, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#e5e7eb' },
   faqList: { gap: 12 },
   faqItem: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 12, marginBottom: 12 },
@@ -357,6 +437,45 @@ const styles = StyleSheet.create({
   faqQuestion: { fontSize: 16, fontWeight: '600', color: '#111827', flex: 1, marginRight: 12 },
   faqAnswerContainer: { paddingTop: 12, paddingLeft: 4 },
   faqAnswer: { fontSize: 14, color: '#6b7280', lineHeight: 20 },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  
+  // Confirmation Modal - Simplified
+  confirmModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  modalIconContainer: { alignItems: 'center', marginBottom: 16 },
+  modalIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fef2f2', alignItems: 'center', justifyContent: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 6 },
+  modalSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 20 },
+  bookingDetailsCard: { backgroundColor: '#f8fafc', borderRadius: 10, padding: 16, marginBottom: 20 },
+  detailRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  detailLabel: { fontSize: 13, color: '#6b7280', marginLeft: 6, marginRight: 8, minWidth: 65 },
+  detailValue: { fontSize: 13, fontWeight: '600', color: '#111827', flex: 1 },
+  modalButtonContainer: { flexDirection: 'row', gap: 10 },
+  modalButtonSecondary: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  modalButtonSecondaryText: { fontSize: 15, fontWeight: '600', color: '#6b7280' },
+  modalButtonPrimary: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#ef4444', alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  modalButtonPrimaryText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
+  
+  // Loading Modal - Simplified
+  loadingModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 28, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  loadingContainer: { alignItems: 'center' },
+  loadingText: { fontSize: 16, fontWeight: '600', color: '#111827', marginTop: 12, textAlign: 'center' },
+  loadingSubtext: { fontSize: 13, color: '#6b7280', marginTop: 6, textAlign: 'center' },
+  
+  // Success Modal - Simplified
+  successModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  successIconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#f0fdf4', alignItems: 'center', justifyContent: 'center' },
+  successModalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 6 },
+  successModalSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 20 },
+  successDetailsCard: { backgroundColor: '#f8fafc', borderRadius: 12, padding: 16, marginBottom: 20 },
+  bookingCodeContainer: { alignItems: 'center', marginBottom: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
+  bookingCodeLabel: { fontSize: 13, color: '#6b7280', marginBottom: 6, fontWeight: '600' },
+  bookingCodeValue: { fontSize: 24, fontWeight: '700', color: '#ef4444', letterSpacing: 1, marginBottom: 6 },
+  bookingCodeNote: { fontSize: 11, color: '#9ca3af', textAlign: 'center' },
+  contactInfoCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0fdf4', padding: 12, borderRadius: 10 },
+  contactInfoText: { fontSize: 13, color: '#15803d', marginLeft: 10, flex: 1, fontWeight: '500' },
+  successButton: { paddingVertical: 14, borderRadius: 10, backgroundColor: '#10b981', alignItems: 'center' },
+  successButtonText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
 });
 
 

@@ -450,20 +450,20 @@ export default function AutomobileDetailScreen() {
       <Modal
         visible={showDatePicker}
         transparent={true}
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setShowDatePicker(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.calendarContainer}>
             <View style={styles.calendarHeader}>
               <TouchableOpacity onPress={() => navigateMonth('prev')} style={styles.navButton}>
-                <Ionicons name="chevron-back" size={20} color="#374151" />
+                <Ionicons name="chevron-back" size={20} color="#6b7280" />
               </TouchableOpacity>
               <Text style={styles.monthYear}>
                 {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </Text>
               <TouchableOpacity onPress={() => navigateMonth('next')} style={styles.navButton}>
-                <Ionicons name="chevron-forward" size={20} color="#374151" />
+                <Ionicons name="chevron-forward" size={20} color="#6b7280" />
               </TouchableOpacity>
             </View>
             
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' },
   
   // Confirmation Modal
-  confirmModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  confirmModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 340, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
   modalIconContainer: { alignItems: 'center', marginBottom: 16 },
   modalIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#f0fdf4', alignItems: 'center', justifyContent: 'center' },
   modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 6 },
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   loadingSubtext: { fontSize: 13, color: '#6b7280', marginTop: 6, textAlign: 'center' },
   
   // Success Modal
-  successModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  successModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 340, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
   successIconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#f0fdf4', alignItems: 'center', justifyContent: 'center' },
   successModalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 6 },
   successModalSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 20 },
@@ -611,22 +611,22 @@ const styles = StyleSheet.create({
   successButton: { paddingVertical: 14, borderRadius: 10, backgroundColor: '#10b981', alignItems: 'center' },
   successButtonText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
   
-  // Calendar Modal
-  calendarContainer: { backgroundColor: '#ffffff', borderRadius: 16, margin: 20, padding: 20, maxWidth: 350, width: '90%' },
+  // Calendar Modal (aligned with Healthcare)
+  calendarContainer: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 340, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
   calendarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   navButton: { padding: 8, borderRadius: 8, backgroundColor: '#f3f4f6' },
-  monthYear: { fontSize: 18, fontWeight: '600', color: '#111827' },
+  monthYear: { fontSize: 18, fontWeight: '700', color: '#111827' },
   weekDays: { flexDirection: 'row', marginBottom: 10 },
   weekDayText: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '600', color: '#6b7280', paddingVertical: 8 },
-  calendarGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  calendarDay: { width: '14.28%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 8, margin: 1 },
+  calendarGrid: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 20 },
+  calendarDay: { width: '14.285%', height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 8 },
   emptyDay: { backgroundColor: 'transparent' },
-  todayDay: { backgroundColor: '#dcfce7', borderWidth: 1, borderColor: '#059669' },
-  selectedDay: { backgroundColor: '#059669' },
+  todayDay: { backgroundColor: '#fef2f2' },
+  selectedDay: { backgroundColor: '#ef4444' },
   pastDay: { opacity: 0.3 },
-  calendarDayText: { fontSize: 14, fontWeight: '500', color: '#374151' },
-  todayText: { color: '#059669', fontWeight: '600' },
-  selectedText: { color: '#ffffff', fontWeight: '600' },
+  calendarDayText: { fontSize: 14, fontWeight: '500', color: '#111827' },
+  todayText: { color: '#ef4444', fontWeight: '700' },
+  selectedText: { color: '#ffffff', fontWeight: '700' },
   pastText: { color: '#9ca3af' },
   closeCalendarButton: { marginTop: 20, paddingVertical: 12, backgroundColor: '#f3f4f6', borderRadius: 8, alignItems: 'center' },
   closeCalendarText: { fontSize: 16, fontWeight: '600', color: '#374151' },
@@ -635,6 +635,6 @@ const styles = StyleSheet.create({
   calendarButtonContainer: { flexDirection: 'row', gap: 10, marginTop: 20 },
   calendarCancelButton: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
   calendarCancelText: { fontSize: 15, fontWeight: '600', color: '#6b7280' },
-  calendarConfirmButton: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#059669', alignItems: 'center' },
+  calendarConfirmButton: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#ef4444', alignItems: 'center' },
   calendarConfirmText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
 });
