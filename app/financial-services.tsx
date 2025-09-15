@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import NoDataIllustration from "../assets/no-data.svg";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { useNavigation, router } from "expo-router";
 
 type CategoryKey = "Banking" | "Insurance - Policy" | "Tax & Compliance";
 
@@ -325,7 +325,14 @@ export default function FinancialServicesScreen() {
         }}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+          <TouchableOpacity 
+            activeOpacity={0.9} 
+            style={styles.card}
+            onPress={() => {
+              const serviceId = item.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+              router.push(`/financial-detail?serviceId=${serviceId}`);
+            }}
+          >
             <View style={{ position: "relative" }}>
               <Image source={require("../assets/default.png")} style={styles.image} resizeMode="cover" />
               {item.offers && (
@@ -370,10 +377,9 @@ export default function FinancialServicesScreen() {
                 <Text style={styles.availabilityText}>{item.availability}</Text>
               </View>
 
-              <View style={styles.actionsRow}>
-                <TouchableOpacity activeOpacity={0.9} onPress={() => {}} style={styles.requestNowBtn}>
-                  <Text style={styles.requestNowText}>Request Now</Text>
-                </TouchableOpacity>
+              <View style={styles.ctaContainer}>
+                <Text style={styles.ctaText}>View & Request Service</Text>
+                <Ionicons name="arrow-forward" size={16} color="#1e40af" />
               </View>
             </View>
           </TouchableOpacity>
@@ -438,4 +444,6 @@ const styles = StyleSheet.create({
   requestNowBtn: { flex: 1, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", backgroundColor: "#1e40af" },
   requestNowText: { fontWeight: "700", color: "#ffffff", fontSize: 14 },
   scrollTopFab: { position: "absolute", right: 16, bottom: 72, width: 44, height: 44, borderRadius: 22, backgroundColor: "#111827", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowOffset: { width: 0, height: 6 }, shadowRadius: 12, elevation: 4 },
+  ctaContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 12 },
+  ctaText: { fontSize: 14, fontWeight: '600', color: '#1e40af', marginRight: 6 },
 });

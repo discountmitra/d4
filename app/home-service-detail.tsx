@@ -21,6 +21,26 @@ export default function HomeServiceDetailScreen() {
   const [preferredTime, setPreferredTime] = useState("");
   const [issueNotes, setIssueNotes] = useState("");
   const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string; time?: string }>({});
+  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+
+    const faqData = [
+    {
+      question: "How quickly can a technician arrive?",
+      answer: "Our verified technicians can typically reach your location within 2-4 hours for urgent requests, or you can schedule a convenient time slot."
+    },
+    {
+      question: "What if the technician cannot fix the issue?",
+      answer: "If the problem cannot be resolved, you won't be charged for the service. We also provide free re-visits if the same issue occurs within 7 days."
+    },
+    {
+      question: "What payment methods do you accept?",
+      answer: "We accept cash, UPI, credit/debit cards, and digital wallets. Payment is required only after the service is completed to your satisfaction."
+    },
+    {
+      question: "Do you provide warranty on repairs?",
+      answer: "Yes, we offer a 30-day service warranty on all repairs and replacements. Original manufacturer warranty applies to new parts and installations."
+    }
+  ];
 
   const handleRequest = () => {
     const newErrors: { name?: string; phone?: string; address?: string; time?: string } = {};
@@ -34,9 +54,18 @@ export default function HomeServiceDetailScreen() {
     const requestId = Math.random().toString(36).slice(2, 8).toUpperCase();
     Alert.alert(
       "Request Submitted",
-      `Service: ${service.name}\nName: ${userName}\nPhone: ${userPhone}\nAddress: ${address}\nPreferred: ${preferredTime}\nRequest ID: ${requestId}`,
+      `Service: ${service.name}
+Name: ${userName}
+Phone: ${userPhone}
+Address: ${address}
+Preferred: ${preferredTime}
+Request ID: ${requestId}`,
       [{ text: "OK", onPress: () => router.back() }]
     );
+  };
+
+  const toggleFAQ = (index: number) => {
+    setExpandedFAQ(expandedFAQ === index ? null : index);
   };
 
   return (
@@ -131,6 +160,33 @@ export default function HomeServiceDetailScreen() {
           <Text style={styles.noteText}>You will receive a confirmation with a request ID after submission.</Text>
         </View>
 
+                <View style={styles.faqCard}>
+          <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
+          <View style={styles.faqList}>
+            {faqData.map((faq, index) => (
+              <View key={index} style={styles.faqItem}>
+                <TouchableOpacity 
+                  style={styles.faqHeader}
+                  onPress={() => toggleFAQ(index)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.faqQuestion}>{faq.question}</Text>
+                  <Ionicons 
+                    name={expandedFAQ === index ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color="#6b7280" 
+                  />
+                </TouchableOpacity>
+                {expandedFAQ === index && (
+                  <View style={styles.faqAnswerContainer}>
+                    <Text style={styles.faqAnswer}>{faq.answer}</Text>
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        </View>
+
         <View style={{ height: 24 }} />
       </ScrollView>
     </View>
@@ -149,7 +205,7 @@ function getSlidesFor(id: string, name: string): Array<{ title: string; text: st
       return [
         { title: "Wiring & MCB", text: "New wiring, MCB upgrades, and short-circuit fixes.", icon: "flash", color: "#f59e0b" },
         { title: "Appliance Repair", text: "Fan, mixer, and small appliance servicing.", icon: "cog", color: "#3b82f6" },
-        { title: "Switch & Socket", text: "Replacement and installation with proper earthing.", icon: "outlet", color: "#10b981" },
+        { title: "Switch & Socket", text: "Replacement and installation with proper earthing.", icon: "power", color: "#10b981" },
       ];
     case "ac-fridge-repair":
       return [
@@ -293,6 +349,14 @@ const styles = StyleSheet.create({
   requestBtnText: { color: "#fff", fontWeight: "800", marginLeft: 8 },
   noteText: { marginTop: 10, fontSize: 12, color: "#6b7280" },
   errorText: { color: "#ef4444", fontSize: 12, marginTop: 6, fontWeight: "700" },
+
+   faqCard: { backgroundColor: '#ffffff', marginHorizontal: 20, marginBottom: 20, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#e5e7eb' },
+  faqList: { gap: 12 },
+  faqItem: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 12, marginBottom: 12 },
+  faqHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 },
+  faqQuestion: { fontSize: 16, fontWeight: '600', color: '#111827', flex: 1, marginRight: 12 },
+  faqAnswerContainer: { paddingTop: 12, paddingLeft: 4 },
+  faqAnswer: { fontSize: 14, color: '#6b7280', lineHeight: 20 },
 });
 
 
