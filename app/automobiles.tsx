@@ -2,9 +2,9 @@ import { useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import NoDataIllustration from "../assets/no-data.svg";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 
-type CategoryKey = "Showrooms" | "Batteries" | "Car Wash" | "Engine Services" | "Spare Parts" | "Tyres" | "Oils & Lubricants";
+type CategoryKey = "Car Showroom" | "Batteries" | "Car Wash" | "Engine Services" | "Spare Parts" | "Tyres" | "Oils & Lubricants";
 
 type AutomobileService = {
   id: string;
@@ -30,14 +30,15 @@ type AutomobileService = {
 
 export default function AutomobilesScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const listRef = useRef<FlatList<any>>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("Showrooms");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("Car Showroom");
   const [query, setQuery] = useState("");
 
   const categories: CategoryKey[] = [
-    "Showrooms",
-    "Batteries",
+    "Car Showroom",
+    "Batteries", 
     "Car Wash",
     "Engine Services",
     "Spare Parts",
@@ -47,113 +48,77 @@ export default function AutomobilesScreen() {
 
   const data = useMemo<AutomobileService[]>(
     () => [
-      // Showrooms
       {
         id: "car-showroom",
         name: "Car Showroom",
-        specialist: "New & Used Cars",
-        location: "Main Road, Sircilla - 505301",
-        description: "Want to Buy a Car? Call Us Today! No Bargaining Needed, Lowest Price Guarantee",
-        offers: "15% Off",
+        specialist: "Want to Buy a Car? Call Us Today! No Bargaining Needed, Lowest Price Guarantee",
+        description: "",
         buttonType: "request",
-        category: "Showrooms",
+        category: "Car Showroom",
         rating: 4.8,
         reviews: 1200,
         availability: "Available Now",
       },
       {
-        id: "bike-showroom",
-        name: "Bike Showroom",
-        specialist: "Motorcycles & Scooters",
-        location: "Highway Road, Sircilla - 505301",
-        description: "Want to Buy a Bike? Call Us Today! No Bargaining Needed, Lowest Price Guarantee",
-        offers: "12% Off",
+        id: "bike-showrooms",
+        name: "Bike Showrooms",
+        specialist: "Want to Buy a Bike? Call Us Today! No Bargaining Needed, Lowest Price Guarantee",
+        description: "",
         buttonType: "request",
-        category: "Showrooms",
+        category: "Car Showroom",
         rating: 4.7,
         reviews: 980,
         availability: "Available Now",
       },
-      // Batteries
       {
-        id: "amaron-battery",
-        name: "Amaron Battery",
-        specialist: "Battery Specialist",
-        location: "Auto Market, Sircilla - 505301",
-        description: "Amaron Batteries - Bike, Auto & Car Batteries. Door Delivery Available",
-        offers: "35% Off",
-        features: ["Door Delivery Available"],
+        id: "amron-battery",
+        name: "Amron Battery",
+        specialist: "Amaron Batteries - ALL Bike, Auto & Car Batteries Available, Low Price Guarantee, Upto 35% Discount",
+        description: "Door Delivery available",
         buttonType: "request",
         category: "Batteries",
         rating: 4.6,
         reviews: 750,
         availability: "Available Now",
       },
-      // Car Wash Services
       {
         id: "sri-manjunatha-hydraulic",
         name: "Sri Manjunatha Hydraulic Water Servicing Center",
-        specialist: "Hydraulic Services",
-        location: "Karimnagar Road, Srinagar Colony, Beside Common",
-        description: "Professional car and bike washing services with hydraulic equipment",
-        offers: "20% Off",
-        cashback: "Up to ₹100",
-        pricing: [
-          { service: "Bike Wash", price: 100 },
-          { service: "Car Wash (Swift, Dzire, Ford, Ertiga, Creta, Brezza)", price: 500 },
-          { service: "Car Wash (Innova, Fortuner, Bolero, Carnival)", price: 600 }
-        ],
+        specialist: "Sri Manjunatha Hydraulic Water Servicing Center, Hydraulic Services, Location: Karimnagar Road, Srinagar Colony, Beside Common, Cashback: Upto 100",
+        description: "Bike Wash - 100, Car Wash (swift, dzire, ford, ertiga, creta, brezza) 500/-, Car Wash (Innova, Fortuner, Bolero & Carnival) 600/-",
         buttonType: "pay",
         category: "Car Wash",
         rating: 4.9,
         reviews: 1500,
         availability: "Available Now",
       },
-      // Carbon Cleaning Services
       {
         id: "a1-engine-carbon-cleaning",
         name: "A1 Engine Carbon Cleaning Services",
-        specialist: "Engine Specialist",
-        location: "Next to Adarsh Motor Showroom, Shantinagar Road, Sircilla",
-        description: "Professional engine carbon cleaning services for improved performance",
-        offers: "30% Off",
-        cashback: "Up to ₹500",
-        pricing: [
-          { service: "Bike Carbon Cleaning", price: 400, cashback: 100 },
-          { service: "Car Carbon Cleaning - Basic", price: 999, cashback: 200 },
-          { service: "Car Carbon Cleaning - High-End", price: 1999, cashback: 300 },
-          { service: "Auto Carbon Cleaning - Mini", price: 599, cashback: 100 },
-          { service: "Auto Carbon Cleaning - Big", price: 799, cashback: 150 }
-        ],
+        specialist: "Location: Next to Adarsh Motor Showroom, Shantinagar Road, Sircilla, Cashback: Upto 500",
+        description: "Bike Carbon Cleaning - 400 (100 cashback), Car Carbon Cleaning - Basic Cars - 999 (200 Cashback), Car Carbon Cleaning - high-End Cars 1999 (300 Cashback), Auto Carbon Cleaning - Mini - 599 (100 Cashback), Auto Carbon Cleaning - Big - 799 (150 Cashback)",
         buttonType: "pay",
         category: "Engine Services",
         rating: 4.8,
         reviews: 1100,
         availability: "Available Now",
       },
-      // Spare Parts
       {
         id: "vasavi-automobiles",
         name: "Vasavi Automobiles",
-        specialist: "Car & Bike Spare Parts, Auto Care",
-        location: "Karimnagar Road, Sircilla - 505301",
-        description: "Complete range of car and bike spare parts with auto care services. Call 9876543222",
-        offers: "18% Off",
-        voucher: "Pay ₹950, get ₹1000 Voucher",
+        specialist: "Auto Mobiles - Car & Bike Spare Parts, Auto Care, Location: Karimnagar Road, Sircilla - 505301, Phone: 9876543222",
+        description: "Pay 950, get 1000 Rs voucher",
         buttonType: "pay",
         category: "Spare Parts",
         rating: 4.7,
         reviews: 890,
         availability: "Available Now",
       },
-      // Tyres
       {
         id: "mrf-tyres",
-        name: "MRF Tyres",
-        specialist: "Tyre Specialist",
-        location: "Tyre Market, Sircilla - 505301",
-        description: "All Types of MRF Tyres Available",
-        offers: "10% Off",
+        name: "MRF tyres",
+        specialist: "All Types of MRF Tyres Available",
+        description: "10% Discount",
         buttonType: "request",
         category: "Tyres",
         rating: 4.5,
@@ -161,12 +126,10 @@ export default function AutomobilesScreen() {
         availability: "Available Now",
       },
       {
-        id: "apollo-tyres",
-        name: "Apollo Tyres",
-        specialist: "Tyre Dealer",
-        location: "Highway Road, Sircilla - 505301",
-        description: "All Types of Apollo Tyres Available",
-        offers: "10% Off",
+        id: "appolo-tyres",
+        name: "Appolo Tyres",
+        specialist: "All Types of Apollo Tyres Available",
+        description: "10% Discount",
         buttonType: "request",
         category: "Tyres",
         rating: 4.6,
@@ -176,24 +139,19 @@ export default function AutomobilesScreen() {
       {
         id: "normal-tyres",
         name: "Normal Tyres",
-        specialist: "All Brand Tyres",
-        location: "Auto Market, Sircilla - 505301",
-        description: "All Types of Tyres Available",
-        offers: "20% Off",
+        specialist: "All Types of Tyres Available",
+        description: "20% Discount",
         buttonType: "request",
         category: "Tyres",
         rating: 4.4,
         reviews: 580,
         availability: "Available Now",
       },
-      // Oil Services
       {
         id: "oil-shop",
-        name: "Oil Shop",
-        specialist: "Lubricant Specialist",
-        location: "Service Road, Sircilla - 505301",
-        description: "All Brands of Oils Available",
-        offers: "25% Off",
+        name: "Oil shop",
+        specialist: "All Types of brand Oil Shops",
+        description: "25% Discount",
         buttonType: "request",
         category: "Oils & Lubricants",
         rating: 4.5,
@@ -284,12 +242,12 @@ export default function AutomobilesScreen() {
         }}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+          <TouchableOpacity activeOpacity={0.9} style={styles.card} onPress={() => router.push({ pathname: "/automobile-detail", params: { id: item.id, name: item.name, specialist: item.specialist, description: item.description, buttonType: item.buttonType } })}>
             <View style={{ position: "relative" }}>
               <Image source={require("../assets/default.png")} style={styles.image} resizeMode="cover" />
-              {item.offers && (
+              {item.description && item.description.includes('Discount') && (
                 <View style={styles.discountRibbon}>
-                  <Text style={styles.discountText}>{item.offers}</Text>
+                  <Text style={styles.discountText}>{item.description.split(' ')[0]}</Text>
                 </View>
               )}
             </View>
@@ -298,13 +256,7 @@ export default function AutomobilesScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.title}>{item.name}</Text>
                   {item.specialist && (
-                    <Text style={styles.subtitle}>{item.specialist}</Text>
-                  )}
-                  {item.location && (
-                    <View style={styles.locationRow}>
-                      <Ionicons name="location" size={14} color="#6b7280" />
-                      <Text style={styles.locationText}>{item.location}</Text>
-                    </View>
+                    <Text style={styles.subtitle} numberOfLines={2}>{item.specialist.split('\\n')[0]}</Text>
                   )}
                 </View>
                 <View style={styles.ratingRow}>
@@ -330,11 +282,12 @@ export default function AutomobilesScreen() {
                   <View style={styles.availabilityDot} />
                   <Text style={styles.availabilityText}>{item.availability}</Text>
                 </View>
+                <View style={{ flex: 1 }} />
                 <View style={styles.ctaRow}>
                   <Text style={styles.ctaText}>
-                    {item.buttonType === 'request' ? 'Tap to request quote' : 'Tap to view details'}
+                    {item.buttonType === 'request' ? 'Request Now' : 'Pay Now'}
                   </Text>
-                  <Ionicons name="chevron-forward" size={16} color="#6b7280" />
+                  <Ionicons name="arrow-forward" size={16} color="#6b7280" style={{ marginLeft: 6 }} />
                 </View>
               </View>
             </View>

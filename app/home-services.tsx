@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import NoDataIllustration from "../assets/no-data.svg";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { useNavigation, router } from "expo-router";
 
 type CategoryKey = "Repairs & Maintenance" | "Cleaning & Pest Control" | "Painting & Interior" | "Security & Surveillance";
 
@@ -327,7 +327,7 @@ export default function HomeServicesScreen() {
         }}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+          <TouchableOpacity activeOpacity={0.9} style={styles.card} onPress={() => router.push({ pathname: "/home-service-detail", params: { id: item.id, name: item.name, desc: item.description, category: item.category, price: item.price, discount: item.discount } })}>
             <View style={{ position: "relative" }}>
               <Image source={require("../assets/default.png")} style={styles.image} resizeMode="cover" />
               <View style={styles.discountRibbon}>
@@ -366,9 +366,11 @@ export default function HomeServicesScreen() {
               </View>
 
               <View style={styles.actionsRow}>
-                <TouchableOpacity activeOpacity={0.9} onPress={() => {}} style={styles.viewDetailsBtn}>
-                  <Text style={styles.viewDetailsText}>View Details</Text>
-                </TouchableOpacity>
+                <View style={{ flex: 1 }} />
+                <View style={styles.linkContainer}>
+                  <Text style={styles.linkText}>View & book services</Text>
+                  <Ionicons name="arrow-forward" size={16} color="grey" style={{ marginLeft: 6 }} />
+                </View>
               </View>
             </View>
           </TouchableOpacity>
@@ -427,7 +429,9 @@ const styles = StyleSheet.create({
   availabilityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#10b981", marginRight: 6 },
   availabilityText: { fontSize: 12, color: "#10b981", fontWeight: "600" },
   actionsRow: { flexDirection: "row", alignItems: "center", marginTop: 12 },
-  viewDetailsBtn: { flex: 1, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", borderWidth: 1, borderColor: "#3b82f6", backgroundColor: "#f8fafc" },
-  viewDetailsText: { fontWeight: "700", marginLeft: 6, color: "#3b82f6" },
+  viewDetailsBtn: { display: "none" },
+  viewDetailsText: { display: "none" },
+  linkContainer: { flexDirection: "row", alignItems: "center" },
+  linkText: { color: "grey", fontWeight: "700" },
   scrollTopFab: { position: "absolute", right: 16, bottom: 72, width: 44, height: 44, borderRadius: 22, backgroundColor: "#111827", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowOffset: { width: 0, height: 6 }, shadowRadius: 12, elevation: 4 },
 });

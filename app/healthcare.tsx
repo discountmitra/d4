@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import NoDataIllustration from "../assets/no-data.svg";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { useNavigation, router } from "expo-router";
 
 type CategoryKey = "All" | "Hospitals" | "Clinics" | "Pharmacy" | "Diagnostics" | "Dental" | "Eye" | "ENT";
 
@@ -222,7 +222,7 @@ export default function HealthcareScreen() {
         }}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+          <TouchableOpacity activeOpacity={0.9} style={styles.card} onPress={() => router.push({ pathname: "/hospital-detail", params: { id: item.id } })}>
             <View style={{ position: "relative" }}>
               <Image source={require("../assets/default.png")} style={styles.image} resizeMode="cover" />
               <View style={styles.saveRibbon}><Text style={styles.saveText}>Book OP</Text></View>
@@ -245,15 +245,9 @@ export default function HealthcareScreen() {
                 </View>
               </View>
 
-              <View style={styles.actionsRow}>
-                <TouchableOpacity activeOpacity={0.9} onPress={() => {}} style={[styles.actionBtn, styles.callBtn]}>
-                  <Ionicons name="call" size={16} color="#111827" />
-                  <Text style={[styles.actionText, { color: "#111827" }]}>Call Now</Text>
-                </TouchableOpacity>
-                <TouchableOpacity activeOpacity={0.9} onPress={() => {}} style={[styles.actionBtn, styles.bookBtn]}>
-                  <Ionicons name="calendar" size={16} color="#fff" />
-                  <Text style={[styles.actionText, { color: "#fff" }]}>Book Now (₹{item.bookingPay})</Text>
-                </TouchableOpacity>
+              <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="chevron-forward" size={16} color="#6b7280" />
+                <Text style={{ color: "#6b7280", fontWeight: "700", marginLeft: 4 }}>Tap to book</Text>
               </View>
             </View>
           </TouchableOpacity>

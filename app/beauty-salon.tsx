@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import NoDataIllustration from "../assets/no-data.svg";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 
 export interface SalonService {
   id: string;
@@ -42,67 +42,13 @@ export const salonServices: SalonLocation[] = [
     reviews: 234,
     services: [
       {
-        id: 'haircut-basic',
-        name: 'Haircut',
-        description: 'Professional styling and haircut with premium tools',
+        id: 'hair-zone-package',
+        name: 'Hair Zone Makeover',
+        description: 'Complete grooming services - Haircuts, Facial, Tattoo',
         price: 130,
         image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW4lMjBoYWlyY3V0JTIwYmFyYmVyJTIwc2hvcHxlbnwxfHx8fDE3NTYyMzI0MTF8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        category: 'Haircuts',
-        subcategory: 'Basic Services'
-      },
-      {
-        id: 'haircut-shaving',
-        name: 'Haircut + Shaving',
-        description: 'Complete grooming with haircut and clean shave',
-        price: 170,
-        image: 'https://images.unsplash.com/photo-1621647428745-2aeb90f9c103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW4lMjBzaGF2aW5nJTIwYmFyYmVyJTIwc2VydmljZXxlbnwxfHx8fDE3NTYyMzI0MTF8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        category: 'Haircuts',
-        subcategory: 'Combo Services'
-      },
-      {
-        id: 'haircut-shaving-massage',
-        name: 'Haircut + Shaving + Head Massage',
-        description: 'Premium package with haircut, shave and relaxing head massage',
-        price: 200,
-        image: 'https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFkJTIwbWFzc2FnZSUyMGJhcmJlciUyMHNlcnZpY2V8ZW58MXx8fHwxNzU2MjMyNDEyfDA&ixlib=rb-4.1.0&q=80&w=1080',
-        category: 'Haircuts',
-        subcategory: 'Premium Services'
-      },
-      {
-        id: 'facial-basic',
-        name: 'Facial',
-        description: 'Deep cleansing facial for healthy and glowing skin',
-        price: 200,
-        image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW4lMjBmYWNpYWwlMjB0cmVhdG1lbnQlMjBza2luY2FyZXxlbnwxfHx8fDE3NTYyMzI0MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        category: 'Facial',
-        subcategory: 'Skincare'
-      },
-      {
-        id: 'detan-treatment',
-        name: 'De-Tan Treatment',
-        description: 'Remove sun tan and restore natural skin tone',
-        price: 300,
-        image: 'https://images.unsplash.com/photo-1616391182219-e080b4d1043a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxza2luJTIwdHJlYXRtZW50JTIwZmFjaWFsJTIwdGhlcmFweXxlbnwxfHx8fDE3NTYyMzI0MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        category: 'Facial',
-        subcategory: 'Specialized Treatments'
-      },
-      {
-        id: 'face-masks-therapy',
-        name: 'Face Masks & Skin Therapy',
-        description: 'Advanced skincare with specialized masks and therapy',
-        price: 500,
-        image: 'https://images.unsplash.com/photo-1616391182219-e080b4d1043a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxza2luJTIwdGhlcmFweSUyMGZhY2UlMjBtYXNrJTIwdHJlYXRtZW50fGVufDF8fHx8MTc1NjIzMjQxM3ww&ixlib=rb-4.1.0&q=80&w=1080',
-        category: 'Facial',
-        subcategory: 'Premium Treatments'
-      },
-      {
-        id: 'tattoo-service',
-        name: 'Tattoo Service',
-        description: 'Professional tattoo work with custom designs',
-        price: 499,
-        image: 'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0YXR0b28lMjBhcnRpc3QlMjB3b3JrJTIwc2VydmljZXxlbnwxfHx8fDE3NTYyMzI0MTN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        category: 'Tattoo',
-        subcategory: 'Body Art'
+        category: 'Hair zone',
+        subcategory: 'Men'
       }
     ]
   }
@@ -112,6 +58,7 @@ type FlatService = SalonService & { locationId: string; locationName: string; ra
 
 export default function BeautySalonScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const listRef = useRef<FlatList<any>>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<SalonCategoryKey>('men');
@@ -213,7 +160,7 @@ export default function BeautySalonScreen() {
         }}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+          <TouchableOpacity activeOpacity={0.9} style={styles.card} onPress={() => router.push({ pathname: "/salon-detail", params: { id: item.locationId, name: item.locationName, address: item.address, rating: item.rating.toString(), reviews: item.reviews.toString() } })}>
             <View style={{ position: "relative" }}>
               <Image source={{ uri: item.image }} style={styles.image} resizeMode="cover" />
               <View style={styles.discountRibbon}>
@@ -256,9 +203,15 @@ export default function BeautySalonScreen() {
               </View>
 
               <View style={styles.actionsRow}>
-                <TouchableOpacity activeOpacity={0.9} onPress={() => {}} style={styles.requestNowBtn}>
-                  <Text style={styles.requestNowText}>Book Now</Text>
-                </TouchableOpacity>
+                <View style={styles.availabilityRow}>
+                  <View style={styles.availabilityDot} />
+                  <Text style={styles.availabilityText}>Available Now</Text>
+                </View>
+                <View style={{ flex: 1 }} />
+                <View style={styles.ctaContainer}>
+                  <Text style={styles.ctaText}>Pay and booking</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#6b7280" style={{ marginLeft: 6 }} />
+                </View>
               </View>
             </View>
           </TouchableOpacity>
@@ -319,6 +272,11 @@ const styles = StyleSheet.create({
   priceText: { fontSize: 14, fontWeight: "700", color: "#111827" },
   detailsText: { fontSize: 11, color: "#6b7280", marginTop: 2 },
   actionsRow: { flexDirection: "row", alignItems: "center", marginTop: 12 },
+  availabilityRow: { flexDirection: "row", alignItems: "center" },
+  availabilityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#10b981", marginRight: 6 },
+  availabilityText: { fontSize: 12, color: "#10b981", fontWeight: "600" },
+  ctaContainer: { flexDirection: "row", alignItems: "center" },
+  ctaText: { fontSize: 12, color: "#6b7280", fontWeight: "600" },
   requestNowBtn: { flex: 1, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", backgroundColor: "#111827" },
   requestNowText: { fontWeight: "700", color: "#ffffff", fontSize: 14 },
   scrollTopFab: { position: "absolute", right: 16, bottom: 72, width: 44, height: 44, borderRadius: 22, backgroundColor: "#111827", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowOffset: { width: 0, height: 6 }, shadowRadius: 12, elevation: 4 },

@@ -13,6 +13,8 @@ export default function TakeAwayScreen() {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showFloatingMenu, setShowFloatingMenu] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
 
   // Get restaurant data from params
   const restaurant: Restaurant = useMemo(() => {
@@ -275,8 +277,14 @@ export default function TakeAwayScreen() {
       </View>
 
       <ScrollView 
+        ref={scrollRef}
         style={styles.content} 
         showsVerticalScrollIndicator={false}
+        onScroll={({ nativeEvent }) => {
+          const offsetY = nativeEvent.contentOffset.y;
+          setShowScrollTop(offsetY > 300);
+        }}
+        scrollEventThrottle={16}
       >
 
         {/* Search Bar */}
@@ -295,7 +303,6 @@ export default function TakeAwayScreen() {
                 <Ionicons name="close-circle" size={18} color="#6b7280" />
               </TouchableOpacity>
             )}
-            <Ionicons name="mic" size={18} color="#6b7280" />
           </View>
         </View>
 
@@ -510,6 +517,20 @@ export default function TakeAwayScreen() {
           <View style={styles.floatingMenuBadge}>
             <Text style={styles.floatingMenuBadgeText}>{Object.values(cart).reduce((a, b) => a + b, 0)}</Text>
           </View>
+        </TouchableOpacity>
+      )}
+
+      {/* Scroll To Top Button */}
+      {showScrollTop && (
+        <TouchableOpacity 
+          style={[
+            styles.scrollTopButton,
+            cartTotal > 0 ? styles.scrollTopButtonWithCart : null
+          ]}
+          onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+          accessibilityLabel="Scroll to top"
+        >
+          <Ionicons name="arrow-up" size={22} color="#fff" />
         </TouchableOpacity>
       )}
 
@@ -1312,5 +1333,24 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
     marginRight: 6,
+  },
+  scrollTopButton: {
+    position: "absolute",
+    right: 20,
+    bottom: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#111827",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  scrollTopButtonWithCart: {
+    bottom: 140,
   },
 });
