@@ -2,96 +2,18 @@ import { useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import NoDataIllustration from "../assets/no-data.svg";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
+import { restaurantData, Restaurant } from "../constants/restaurantData";
 
-type Restaurant = {
-  id: string;
-  name: string;
-  cuisine: string;
-  specialty: string;
-  image: any;
-  cashback: string;
-  discount: string;
-  rating: number;
-  reviews: number;
-  distance: string;
-  prepTime: string;
-  phone: string;
-  openTime: string;
-  area?: string;
-  savePercent?: number;
-  priceForTwo?: string;
-  opensIn?: string;
-};
 
 export default function FoodScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const listRef = useRef<FlatList<any>>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [query, setQuery] = useState("");
 
-  const data = useMemo<Restaurant[]>(
-    () => [
-      {
-        id: "1",
-        name: "ICE HOUSE",
-        cuisine: "Pizza, Burgers, Ice Creams",
-        specialty: "Pizza, Burgers, Ice Creams, French Fries, Mocktails, Thickshakes",
-        image: require("../assets/default.png"),
-        cashback: "Up to 7% Cashback",
-        discount: "Online Payment",
-        rating: 4.5,
-        reviews: 250,
-        distance: "6km",
-        prepTime: "25-30 mins",
-        phone: "+91 98765 43210",
-        openTime: "10:00 AM - 11:00 PM",
-        area: "Gandi Maisa...",
-        savePercent: 20,
-        priceForTwo: "₹300 for two",
-        opensIn: "Open Now",
-      },
-      {
-        id: "2",
-        name: "Shankar Chat",
-        cuisine: "Street Food, Chaat",
-        specialty: "Pani Puri & Chaat",
-        image: require("../assets/default.png"),
-        cashback: "Up to 10% Cashback",
-        discount: "Online Payment",
-        rating: 4.8,
-        reviews: 180,
-        distance: "9km",
-        prepTime: "17 mins",
-        phone: "+91 98765 43211",
-        openTime: "11:00 AM - 10:00 PM",
-        area: "Kompally",
-        savePercent: 66,
-        priceForTwo: "₹700 for two",
-        opensIn: "Opens in 17 mins",
-      },
-      {
-        id: "3",
-        name: "Indian Fast Food",
-        cuisine: "Chinese, Indian",
-        specialty: "Rice, Noodles & Manchurian (Veg, Non-Veg & Egg)",
-        image: require("../assets/default.png"),
-        cashback: "Up to 10% Cashback",
-        discount: "Online Payment",
-        rating: 4.6,
-        reviews: 320,
-        distance: "9km",
-        prepTime: "17 mins",
-        phone: "+91 98765 43212",
-        openTime: "12:00 PM - 11:00 PM",
-        area: "Pet Basheera...",
-        savePercent: 56,
-        priceForTwo: "₹500 for two",
-        opensIn: "Opens in 17 mins",
-      },
-    ],
-    []
-  );
+  const data = useMemo<Restaurant[]>(() => restaurantData, []);
 
   const matchesOrdered = (q: string, ...fields: string[]) => {
     const queryStr = q.trim().toLowerCase();
@@ -109,7 +31,7 @@ export default function FoodScreen() {
 
   const filtered = useMemo(() => {
     if (!query.trim()) return data;
-    return data.filter(r => matchesOrdered(query, r.name, r.cuisine, r.specialty));
+    return data.filter(r => matchesOrdered(query, r.name, r.category, r.specialist.join(" ")));
   }, [data, query]);
 
   return (
@@ -163,9 +85,16 @@ export default function FoodScreen() {
         }}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+          <TouchableOpacity 
+            activeOpacity={0.9} 
+            style={styles.card}
+            onPress={() => router.push({
+              pathname: '/restaurant-detail',
+              params: { restaurantId: item.id }
+            })}
+          >
             <View style={{ position: "relative" }}>
-              <Image source={item.image} style={styles.image} resizeMode="cover" />
+              <Image source={require("../assets/default.png")} style={styles.image} resizeMode="cover" />
               <View style={styles.homeDeliveryPill}>
                 <Ionicons name="bicycle-outline" size={14} color="#111827" />
                 <Text style={styles.homeDeliveryText}>home delivery</Text>
@@ -185,7 +114,7 @@ export default function FoodScreen() {
               <View style={styles.titleRow}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.title}>{item.name}</Text>
-                  <Text style={styles.subtitle}>{item.cuisine}</Text>
+                  <Text style={styles.subtitle}>{item.specialist.join(", ")}</Text>
                   <View style={styles.ratingStarsRow}>
                     {Array.from({ length: 5 }).map((_, idx) => (
                       <Ionicons
@@ -205,8 +134,6 @@ export default function FoodScreen() {
                   <Text style={styles.reviewsText}>({item.reviews})</Text>
                 </View>
               </View>
-
-
 
               <View style={styles.footerRow}>
                 <Text style={styles.openLabel}>Open: <Text style={styles.openTime}>{item.openTime}</Text></Text>
