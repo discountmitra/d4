@@ -51,7 +51,7 @@ export default function FoodScreen() {
           <View style={styles.searchBar}>
             <Ionicons name="search" size={18} color="#6b7280" style={{ marginRight: 8 }} />
             <TextInput
-              placeholder="Search restaurants, cuisines..."
+              placeholder="Search restaurants, cuisines"
               placeholderTextColor="#6b7280"
               style={styles.searchInput}
               value={query}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, Modal, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useLocalSearchParams, useRouter } from "expo-router";
 import { restaurantData, Restaurant } from "../constants/restaurantData";
@@ -23,16 +23,25 @@ export default function DineOutScreen() {
     return amount - discount;
   }, [billAmount]);
 
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showProcessing, setShowProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const handlePayment = () => {
     if (!billAmount || parseFloat(billAmount) <= 0) {
       Alert.alert('Error', 'Please enter a valid bill amount');
       return;
     }
-    Alert.alert(
-      'Payment Successful',
-      `Bill Amount: ₹${billAmount}\nDiscount: ${discountPercentage}%\nFinal Amount: ₹${finalAmount.toFixed(2)}\n\nShow this confirmation to the restaurant.`,
-      [{ text: 'OK', onPress: () => router.back() }]
-    );
+    setShowConfirm(true);
+  };
+
+  const confirmPayment = () => {
+    setShowConfirm(false);
+    setShowProcessing(true);
+    setTimeout(() => {
+      setShowProcessing(false);
+      setShowSuccess(true);
+    }, 1500);
   };
 
   return (
@@ -153,6 +162,59 @@ export default function DineOutScreen() {
           <Text style={styles.thankYouTitle}>Thank you for visiting!</Text>
         </View>
       </ScrollView>
+
+      {/* Confirmation Modal */}
+      <Modal visible={showConfirm} transparent animationType="fade" onRequestClose={() => setShowConfirm(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModalCard}>
+            <View style={styles.modalIconContainer}>
+              <View style={styles.modalIconCircle}>
+                <Ionicons name="help-circle" size={32} color="#7c3aed" />
+              </View>
+            </View>
+            <Text style={styles.modalTitle}>Confirm Payment</Text>
+            <Text style={styles.modalSubtitle}>Pay ₹{finalAmount.toFixed(2)} after {discountPercentage}% off?</Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity style={styles.modalButtonSecondary} onPress={() => setShowConfirm(false)}>
+                <Text style={styles.modalButtonSecondaryText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButtonPrimary} onPress={confirmPayment}>
+                <Ionicons name="checkmark-circle" size={18} color="#ffffff" />
+                <Text style={styles.modalButtonPrimaryText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Loading Modal */}
+      <Modal visible={showProcessing} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.loadingModalCard}>
+            <ActivityIndicator size="large" color="#7c3aed" />
+            <Text style={styles.loadingText}>Processing payment...</Text>
+            <Text style={styles.loadingSubtext}>Please wait</Text>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Success Modal */}
+      <Modal visible={showSuccess} transparent animationType="fade" onRequestClose={() => setShowSuccess(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModalCard}>
+            <View style={styles.modalIconContainer}>
+              <View style={styles.successIconCircle}>
+                <Ionicons name="checkmark-circle" size={48} color="#10b981" />
+              </View>
+            </View>
+            <Text style={styles.successModalTitle}>Payment Successful</Text>
+            <Text style={styles.successModalSubtitle}>Show this confirmation to the restaurant.</Text>
+            <TouchableOpacity style={styles.successButton} onPress={() => { setShowSuccess(false); router.back(); }}>
+              <Text style={styles.successButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -807,4 +869,26 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     maxWidth: 280,
   },
+
+  // Modal styles (aligned with other screens)
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  confirmModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  modalIconContainer: { alignItems: 'center', marginBottom: 16 },
+  modalIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(124,58,237,0.1)', alignItems: 'center', justifyContent: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 6 },
+  modalSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 20 },
+  modalButtonContainer: { flexDirection: 'row', gap: 10 },
+  modalButtonSecondary: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  modalButtonSecondaryText: { fontSize: 15, fontWeight: '600', color: '#6b7280' },
+  modalButtonPrimary: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#7c3aed', alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  modalButtonPrimaryText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
+  loadingModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 28, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  loadingText: { fontSize: 16, fontWeight: '600', color: '#111827', marginTop: 12, textAlign: 'center' },
+  loadingSubtext: { fontSize: 13, color: '#6b7280', marginTop: 6, textAlign: 'center' },
+  successModalCard: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  successIconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#f0fdf4', alignItems: 'center', justifyContent: 'center' },
+  successModalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 6 },
+  successModalSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 20 },
+  successButton: { paddingVertical: 14, borderRadius: 10, backgroundColor: '#10b981', alignItems: 'center' },
+  successButtonText: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
 });
